@@ -1,233 +1,5 @@
-// Variables
-let audioPlayer = document.getElementById('audioPlayer');
-let playPauseBtn = document.getElementById('playPauseBtn');
-let volumeControl = document.getElementById('volumeControl');
-let searchInput = document.getElementById('searchInput');
-let uploadArea = document.getElementById('uploadArea');
-let fileInput = document.getElementById('fileInput');
-let fileList = document.getElementById('fileList');
-let musicGrid = document.getElementById('musicGrid');
-let musicCount = document.getElementById('musicCount');
-
-let musicLibrary = [];
-let currentMusicIndex = -1;
-let isPlaying = false;
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    setupEventListeners();
-    loadMusicFromStorage();
-});
-
-// Event Listeners
-function setupEventListeners() {
-    playPauseBtn.addEventListener('click', togglePlayPause);
-    volumeControl.addEventListener('input', changeVolume);
-    searchInput.addEventListener('input', filterMusic);
-    
-    // Upload Area
-    uploadArea.addEventListener('click', () => fileInput.click());
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
-    uploadArea.addEventListener('drop', handleDrop);
-    
-    fileInput.addEventListener('change', handleFileUpload);
-    audioPlayer.addEventListener('ended', playNextMusic);
-    audioPlayer.addEventListener('play', updatePlayButton);
-    audioPlayer.addEventListener('pause', updatePlayButton);
-}
-
-// Play/Pause
-function togglePlayPause() {
-    if (musicLibrary.length === 0) {
-        alert('Adicione músicas primeiro!');
-        return;
-    }
-    
-    if (audioPlayer.src === '') {
-        playMusic(0);
-    } else if (isPlaying) {
-        audioPlayer.pause();
-    } else {
-        audioPlayer.play();
-    }
-}
-
-function updatePlayButton() {
-    isPlaying = !audioPlayer.paused;
-    playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
-}
-
-// Volume Control
-function changeVolume() {
-    audioPlayer.volume = volumeControl.value / 100;
-}
-
-// File Upload
-function handleDragOver(e) {
-    e.preventDefault();
-    uploadArea.classList.add('drag-over');
-}
-
-function handleDragLeave() {
-    uploadArea.classList.remove('drag-over');
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    uploadArea.classList.remove('drag-over');
-    handleFiles(e.dataTransfer.files);
-}
-
-function handleFileUpload(e) {
-    handleFiles(e.target.files);
-}
-
-function handleFiles(files) {
-    Array.from(files).forEach(file => {
-        if (file.type === 'audio/mpeg' || file.name.endsWith('.mp3')) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const music = {
-                    id: Date.now() + Math.random(),
-                    name: file.name.replace('.mp3', ''),
-                    artist: 'Artista Desconhecido',
-                    url: e.target.result,
-                    size: formatFileSize(file.size)
-                };
-                
-                musicLibrary.push(music);
-                saveMusicToStorage();
-                displayMusic();
-                updateMusicCount();
-                displayFileItem(file.name, music.size);
-            };
-            
-            reader.readAsDataURL(file);
-        }
-    });
-}
-
-// Display Music
-function displayMusic(library = musicLibrary) {
-    musicGrid.innerHTML = '';
-    
-    if (library.length === 0) {
-        musicGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 40px;">Nenhuma música encontrada</p>';
-        return;
-    }
-    
-    library.forEach((music, index) => {
-        const card = document.createElement('div');
-        card.className = 'music-card';
-        card.innerHTML = `
-            <div class="music-cover">
-                <div class="cover-placeholder">🎶</div>
-            </div>
-            <div class="music-info">
-                <h3 class="music-title">${music.name}</h3>
-                <p class="music-artist">${music.artist}</p>
-            </div>
-            <div class="player-controls">
-                <button class="play-btn">▶</button>
-            </div>
-        `;
-        
-        card.querySelector('.play-btn').addEventListener('click', () => {
-            currentMusicIndex = musicLibrary.indexOf(music);
-            playMusic(currentMusicIndex);
-        });
-        
-        musicGrid.appendChild(card);
-    });
-}
-
-function displayFileItem(name, size) {
-    const item = document.createElement('div');
-    item.className = 'file-item';
-    item.innerHTML = `
-        <span class="file-item-name">📁 ${name}</span>
-        <span class="file-item-size">${size}</span>
-    `;
-    fileList.appendChild(item);
-    
-    setTimeout(() => {
-        item.remove();
-    }, 5000);
-}
-
-// Music Controls
-function playMusic(index) {
-    if (index < 0 || index >= musicLibrary.length) return;
-    
-    currentMusicIndex = index;
-    const music = musicLibrary[index];
-    
-    audioPlayer.src = music.url;
-    audioPlayer.play();
-    
-    updatePlayerInfo(music);
-}
-
-function playNextMusic() {
-    currentMusicIndex++;
-    if (currentMusicIndex < musicLibrary.length) {
-        playMusic(currentMusicIndex);
-    }
-}
-
-function updatePlayerInfo(music) {
-    document.querySelector('.player-title').textContent = music.name;
-    document.querySelector('.player-artist').textContent = music.artist;
-}
-
-// Search
-function filterMusic() {
-    const query = searchInput.value.toLowerCase();
-    const filtered = musicLibrary.filter(music => 
-        music.name.toLowerCase().includes(query) ||
-        music.artist.toLowerCase().includes(query)
-    );
-    displayMusic(filtered);
-}
-
-// Utilities
-function updateMusicCount() {
-    const count = musicLibrary.length;
-    musicCount.textContent = `${count} ${count === 1 ? 'música' : 'músicas'}`;
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
-// Local Storage
-function saveMusicToStorage() {
-    const data = musicLibrary.map(music => ({
-        id: music.id,
-        name: music.name,
-        artist: music.artist,
-        url: music.url,
-        size: music.size
-    }));
-    localStorage.setItem('musicLibrary', JSON.stringify(data));
-}
-
-function loadMusicFromStorage() {
-    const data = localStorage.getItem('musicLibrary');
-    if (data) {
-        musicLibrary = JSON.parse(data);
-        displayMusic();
-        updateMusicCount();
-    }
-}
-// Spotify API (consulta pública)
-const SPOTIFY_TOKEN = 'BQC6r1rd4Q-5kqUhqUKulCUuVOl3xNxcoJ-2CwLbxlZIAKyZDXqgyTaAl6IFDrcZyrxNbYB570uY_aZ0o35TmRkvPrPTXYpq2Qw4R-zH-S8KsX0moaOCTo-8glCUPQqgcWLoxcaOiXkhe5NKkVPzVBuQ_XLHUjE5WssmSclFVbKwkOUB7hLodr6ncQGnr-ldNI5vMdmhb2g0tt9tiwvh4lPduxAsb0HtAiKDVdVhtosel_RV17zXYbsCUo0quKrrB1Rz5CNmi1AaIDodHdhtbKQ-wicCxSLNeLY1vG-6jx4C25sbzBX5T0BH0yTlXZLODA_XN_9b'; // Troque por seu token válido obtido no painel Spotify Developer
+// SPOTIFY - busque músicas pelo nome/artista
+const SPOTIFY_TOKEN = 'COLE_SEU_ACCESS_TOKEN_AQUI'; // Substitua pelo token real do Spotify
 
 const spotifySearchInput = document.getElementById('spotifySearchInput');
 const spotifyGrid = document.getElementById('spotifyGrid');
@@ -240,7 +12,6 @@ if (spotifySearchInput && spotifyGrid) {
     });
 }
 
-// Busca faixas do Spotify
 async function buscaMusicasSpotify(query) {
     spotifyGrid.innerHTML = '<p>Carregando...</p>';
     try {
@@ -273,3 +44,149 @@ function renderSpotifyTracks(tracks) {
     });
 }
 
+// UPLOAD DE MP3 PERSONALIZADO
+const mp3Form = document.getElementById('mp3Form');
+const fileInput = document.getElementById('fileInput');
+const mp3Title = document.getElementById('mp3Title');
+const mp3Author = document.getElementById('mp3Author');
+const musicGrid = document.getElementById('musicGrid');
+const musicCount = document.getElementById('musicCount');
+let musicLibrary = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadMusicFromStorage();
+});
+
+if (mp3Form) {
+    mp3Form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const file = fileInput.files[0];
+        const title = mp3Title.value.trim();
+        const author = mp3Author.value.trim();
+
+        if (!file || !title || !author) {
+            alert('Preencha todos os campos e selecione um arquivo!');
+            return;
+        }
+        if (!(file.type === 'audio/mpeg' || file.name.endsWith('.mp3'))) {
+            alert('Selecione um arquivo MP3!');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const music = {
+                id: Date.now() + Math.random(),
+                name: title,
+                artist: author,
+                url: ev.target.result,
+                size: formatFileSize(file.size)
+            };
+            musicLibrary.push(music);
+            saveMusicToStorage();
+            displayMusic();
+            updateMusicCount();
+            mp3Form.reset();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function displayMusic(library = musicLibrary) {
+    musicGrid.innerHTML = '';
+    if (!library.length) {
+        musicGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; padding: 40px;">Nenhuma música enviada</p>';
+        return;
+    }
+    library.forEach((music, index) => {
+        const card = document.createElement('div');
+        card.className = 'music-card';
+        card.innerHTML = `
+            <div class="music-cover"><div class="cover-placeholder">🎶</div></div>
+            <div class="music-info">
+                <h3 class="music-title">${music.name}</h3>
+                <p class="music-artist">${music.artist}</p>
+            </div>
+            <div class="player-controls">
+                <button class="play-btn">▶</button>
+            </div>
+        `;
+        card.querySelector('.play-btn').addEventListener('click', () => {
+            playMusic(index);
+        });
+        musicGrid.appendChild(card);
+    });
+}
+
+// PLAYER e STORAGE (deixe igual ao seu script.js atual)
+let audioPlayer = document.getElementById('audioPlayer');
+let playPauseBtn = document.getElementById('playPauseBtn');
+let volumeControl = document.getElementById('volumeControl');
+let currentMusicIndex = -1;
+let isPlaying = false;
+
+if (playPauseBtn) {
+    playPauseBtn.addEventListener('click', togglePlayPause);
+}
+if (volumeControl) {
+    volumeControl.addEventListener('input', changeVolume);
+}
+if (audioPlayer) {
+    audioPlayer.addEventListener('ended', playNextMusic);
+    audioPlayer.addEventListener('play', updatePlayButton);
+    audioPlayer.addEventListener('pause', updatePlayButton);
+}
+
+function togglePlayPause() {
+    if (!musicLibrary.length) return;
+    if (audioPlayer.src === '' && musicLibrary.length) {
+        playMusic(0);
+    } else if (isPlaying) {
+        audioPlayer.pause();
+    } else {
+        audioPlayer.play();
+    }
+}
+function updatePlayButton() {
+    isPlaying = !audioPlayer.paused;
+    playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+}
+function changeVolume() {
+    audioPlayer.volume = volumeControl.value / 100;
+}
+function playMusic(index) {
+    if (index < 0 || index >= musicLibrary.length) return;
+    currentMusicIndex = index;
+    const music = musicLibrary[index];
+    audioPlayer.src = music.url;
+    audioPlayer.play();
+    document.querySelector('.player-title').textContent = music.name;
+    document.querySelector('.player-artist').textContent = music.artist;
+}
+function playNextMusic() {
+    currentMusicIndex++;
+    if (currentMusicIndex < musicLibrary.length) playMusic(currentMusicIndex);
+}
+function updateMusicCount() {
+    const count = musicLibrary.length;
+    musicCount.textContent = `${count} ${count === 1 ? 'música' : 'músicas'}`;
+}
+function formatFileSize(bytes) {
+    if (!bytes) return '0 Bytes';
+    const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+function saveMusicToStorage() {
+    const data = musicLibrary.map(m => ({
+        id: m.id, name: m.name, artist: m.artist, url: m.url, size: m.size
+    }));
+    localStorage.setItem('musicLibrary', JSON.stringify(data));
+}
+function loadMusicFromStorage() {
+    const data = localStorage.getItem('musicLibrary');
+    if (data) {
+        musicLibrary = JSON.parse(data);
+        displayMusic();
+        updateMusicCount();
+    }
+}
