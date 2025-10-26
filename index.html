@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicBox - Streaming de Músicas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🎵 MusicBox</h1>
+                <p>Seu streaming de músicas favoritas</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Search Bar -->
+            <section class="search-section">
+                <input type="text" id="searchInput" class="search-bar" placeholder="Procure uma música...">
+            </section>
+
+            <!-- Playlist Info -->
+            <section class="playlist-info">
+                <h2>Minhas Músicas</h2>
+                <p class="music-count" id="musicCount">0 músicas</p>
+            </section>
+
+            <!-- Music Grid -->
+            <section class="music-grid" id="musicGrid">
+                <!-- Músicas serão adicionadas aqui dinamicamente -->
+                <div class="music-card">
+                    <div class="music-cover">
+                        <div class="cover-placeholder">🎶</div>
+                    </div>
+                    <div class="music-info">
+                        <h3 class="music-title">Sua Música Aqui</h3>
+                        <p class="music-artist">Artista</p>
+                    </div>
+                    <div class="player-controls">
+                        <button class="play-btn">▶</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <h3>Adicione suas músicas</h3>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".mp3" multiple hidden>
+                    <label for="fileInput" class="upload-label">
+                        <span class="upload-icon">⬆️</span>
+                        <span class="upload-text">Clique ou arraste arquivos MP3 aqui</span>
+                    </label>
+                </div>
+                <div class="file-list" id="fileList"></div>
+            </section>
+        </main>
+
+        <!-- Player Bar -->
+        <section class="player-bar">
+            <div class="player-info">
+                <div class="player-cover">🎵</div>
+                <div class="player-details">
+                    <p class="player-title">Nenhuma música selecionada</p>
+                    <p class="player-artist">-</p>
+                </div>
+            </div>
+            <div class="player-controls-main">
+                <button id="playPauseBtn" class="control-btn">▶</button>
+            </div>
+            <div class="player-volume">
+                <input type="range" id="volumeControl" min="0" max="100" value="70" class="volume-slider">
+            </div>
+        </section>
+
+        <!-- Audio Element -->
+        <audio id="audioPlayer"></audio>
+    </div>
+
+    <!-- Spotify Section -->
+<section class="spotify-section">
+    <h3>Músicas do Spotify</h3>
+    <input type="text" id="spotifySearchInput" class="search-bar" placeholder="Buscar no Spotify...">
+    <div class="spotify-grid" id="spotifyGrid"></div>
+</section>
+
+    <script src="script.js"></script>
+</body>
+</html>
