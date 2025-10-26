@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MusicBox - Streaming de Músicas</title>
+    <title>MusicBox Revolution 🚀</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,53 +11,39 @@
         <!-- Header -->
         <header class="header">
             <div class="logo">
-                <h1>🎵 MusicBox</h1>
-                <p>Seu streaming de músicas favoritas</p>
+                <h1>🎵 MusicBox Revolution</h1>
+                <p>Streaming, Spotify & Upload MP3 em um só lugar</p>
             </div>
         </header>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Search Bar -->
-            <section class="search-section">
-                <input type="text" id="searchInput" class="search-bar" placeholder="Procure uma música...">
+
+            <!-- ABA: Spotify -->
+            <section class="spotify-section">
+                <h3>Buscar músicas no Spotify</h3>
+                <input type="text" id="spotifySearchInput" class="search-bar" placeholder="Buscar faixas ou artistas do Spotify...">
+                <div class="spotify-grid" id="spotifyGrid"></div>
             </section>
 
-            <!-- Playlist Info -->
-            <section class="playlist-info">
-                <h2>Minhas Músicas</h2>
-                <p class="music-count" id="musicCount">0 músicas</p>
-            </section>
-
-            <!-- Music Grid -->
-            <section class="music-grid" id="musicGrid">
-                <!-- Músicas serão adicionadas aqui dinamicamente -->
-                <div class="music-card">
-                    <div class="music-cover">
-                        <div class="cover-placeholder">🎶</div>
-                    </div>
-                    <div class="music-info">
-                        <h3 class="music-title">Sua Música Aqui</h3>
-                        <p class="music-artist">Artista</p>
-                    </div>
-                    <div class="player-controls">
-                        <button class="play-btn">▶</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Upload Section -->
+            <!-- ABA: Uploads MP3 Personalizados -->
             <section class="upload-section">
-                <h3>Adicione suas músicas</h3>
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" accept=".mp3" multiple hidden>
-                    <label for="fileInput" class="upload-label">
-                        <span class="upload-icon">⬆️</span>
-                        <span class="upload-text">Clique ou arraste arquivos MP3 aqui</span>
-                    </label>
-                </div>
+                <h3>Envie suas músicas MP3</h3>
+                <form id="mp3Form">
+                    <input type="file" id="fileInput" accept=".mp3" style="margin-bottom: 12px;" required>
+                    <input type="text" id="mp3Title" placeholder="Título da música" class="input-upload" required>
+                    <input type="text" id="mp3Author" placeholder="Autor/Artista" class="input-upload" required>
+                    <button type="submit" class="upload-btn">Enviar</button>
+                </form>
                 <div class="file-list" id="fileList"></div>
             </section>
+
+            <!-- ABA: Biblioteca de Músicas MP3 -->
+            <section class="playlist-info">
+                <h2>Minhas músicas enviadas</h2>
+                <p class="music-count" id="musicCount">0 músicas</p>
+            </section>
+            <section class="music-grid" id="musicGrid"></section>
         </main>
 
         <!-- Player Bar -->
@@ -77,16 +63,8 @@
             </div>
         </section>
 
-        <!-- Audio Element -->
         <audio id="audioPlayer"></audio>
     </div>
-
-    <!-- Spotify Section -->
-<section class="spotify-section">
-    <h3>Músicas do Spotify</h3>
-    <input type="text" id="spotifySearchInput" class="search-bar" placeholder="Buscar no Spotify...">
-    <div class="spotify-grid" id="spotifyGrid"></div>
-</section>
 
     <script src="script.js"></script>
 </body>
